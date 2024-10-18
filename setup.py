@@ -6,7 +6,7 @@ with open('README.md', 'rb') as f:
 
 setup(
     name='autotasker',
-    version='0.1',
+    version='0.1.1',
     description='AutoTasker is a console application designed to simplify and automate repetitive tasks without the '
                 'need for programming skills. With AutoTasker, you can easily set up a variety of automated tasks, '
                 'saving you time and effort in your daily activities.',
@@ -19,7 +19,8 @@ setup(
     packages=find_packages(exclude=['tests']),
     python_requires='>=3.12',
     install_requires=[
-        'Click'
+        'Click',
+        'InquirerPy',
     ],
     entry_points={
             'console_scripts': [
