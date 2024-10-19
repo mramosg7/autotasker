@@ -4,13 +4,20 @@ import os
 
 def read_env_file(file_path):
     env_vars = []
-
-    with open(file_path, 'r', encoding='utf-16') as file:
-        for line in file:
-            line = line.strip()
-            if line and not line.startswith('#') and '=' in line:
-                env_vars.append(line.strip())
-    return env_vars
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            for line in file:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    env_vars.append(line.strip())
+        return env_vars
+    except:
+        with open(file_path, 'r', encoding='utf-16') as file:
+            for line in file:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    env_vars.append(line.strip())
+        return env_vars
 
 
 def get_dockerfile_template(language: str, port: int, version: str, envs: tuple, env_file: str) -> str:
@@ -53,6 +60,8 @@ def get_dockerfile_template(language: str, port: int, version: str, envs: tuple,
     {env_file}
     RUN pip3 install -r requirements.txt
     
+    RUN python manage.py collectstatic --noinput
+    
     ENTRYPOINT ["python3"]
     CMD ["manage.py", "runserver", "0.0.0.0:{port}"]''',
         'vite': f'''FROM node:{version} AS build
@@ -90,6 +99,39 @@ def get_dockerfile_template(language: str, port: int, version: str, envs: tuple,
     COPY --from=build /app/build /usr/share/nginx/html
     EXPOSE {port}
     CMD ["nginx", "-g", "daemon off;"]
+    ''', 'nextjs': f'''
+
+FROM node:{version} AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm install
+
+COPY . .
+
+{envs}
+{env_file}
+
+RUN npm run build
+
+FROM node:{version} AS production
+
+WORKDIR /app
+
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/package-lock.json ./
+RUN npm install --production
+
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+
+{envs}
+{env_file}
+EXPOSE {port}
+
+CMD ["npm", "start"]
     '''
     }
     return templates.get(language.lower(), "Unsupported language")

@@ -4,7 +4,7 @@ from InquirerPy import prompt, inquirer
 
 
 @click.group()
-@click.version_option(version="0.1.1", message=f"autotasker 0.1.1")
+@click.version_option(version="0.2.0", message=f"autotasker 0.2.0")
 def cli():
     """Application for Automating Processes."""
     pass
@@ -21,7 +21,7 @@ def cli():
 @click.option('--env-file', type=click.Path(exists=True),
               help='''Path to a file containing additional environment variables. Each line of the file should
 contain a key-value pair formatted as `KEY=value`. These variables are read and also included
-in the Dockerfile as `ENV` instructions. Only files with UTF-16 encoding are supported.''')
+in the Dockerfile as `ENV` instructions.''')
 @click.option('-p', "--port", default=80, help='Specifies the port on which the container will expose its services. '
                                                'Defaults to port 80 if not specified.')
 @click.option('-v', "--version", default='lts', help='Defines the version of the language or runtime environment to be '
@@ -35,6 +35,7 @@ def docker(path: str, only_image: bool, only_dockerfile: bool, env: tuple, env_f
         {"name": "Django", "value": "django"},
         {"name": "Vite", "value": "vite"},
         {"name": "React (Vanilla)", "value": "react"},
+        {"name": "Next.js", "value": "nextjs"},
     ]
 
     questions = [

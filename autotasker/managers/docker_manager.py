@@ -65,12 +65,13 @@ class DockerManager:
         try:
             command = ["docker", "build", "-t", self.image, self.dockerfile_path]
 
-            result = subprocess.run(command, capture_output=True, text=True)
+            result = subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace')
 
             if result.returncode == 0:
                 click.echo("\r   • Docker Image: " + click.style("created    ", fg="green"))
             else:
                 click.echo(click.style(f'\nError: {result.stderr}', fg='red'))
+                click.echo(click.style(f'\nStdout: {result.stdout}', fg='yellow'))
                 raise click.Abort()
         except Exception as e:
             raise click.Abort()

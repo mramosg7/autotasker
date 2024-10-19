@@ -1,4 +1,6 @@
 # Autotasker
+>[!WARNING]
+>  This project is still a work in progress, so you may encounter errors while using it.
 [![GPL License](https://img.shields.io/badge/license-GPL-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) 
 ![Version](https://img.shields.io/badge/version-0.1.1-green.svg)
 [![Download Stats](https://img.shields.io/pypi/dm/autotasker)](https://pypistats.org/packages/autotasker)
@@ -68,6 +70,9 @@ autotasker docker [OPTIONS] PATH
   ```bash
     autotasker docker --env NAME=Mario --env AGE=21 /path/to/your/directory
   ```
+  ```bash
+    autotasker docker --env-file /path/to/your/environment/variables /path/to/your/directory
+  ```
   - Create a docker container with custom port:
   ```bash
   autotasker docker -p 8000 /path/to/your/directory
@@ -85,3 +90,4 @@ autotasker docker [OPTIONS] PATH
 - Django
 - React
 - Vite
+- Next.js
