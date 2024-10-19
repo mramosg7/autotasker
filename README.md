@@ -10,7 +10,7 @@
 AutoTasker is a console application designed to simplify and automate repetitive tasks without the need for programming skills. With AutoTasker, you can easily set up a variety of automated tasks, saving you time and effort in your daily activities.
 
 ## Installation 
-#### PyPI
+### PyPI
 >[!WARNING]
 >  If you install this application via PyPI, please ensure you do so within a virtual environment.
 
@@ -18,7 +18,7 @@ To install the application via `PyPI`, please execute the following command:
 ```bash 
 pip install autotasker
 ```
-#### pipx
+### pipx
 To install the application using `pipx`, please follow these steps:
 
 - **Install pipx**: If you're unsure how to install pipx, please refer to the official documentation at [pipx documentation](https://pipx.pypa.io/stable/).
@@ -47,8 +47,9 @@ autotasker docker [OPTIONS] PATH
 
 | Option                 | Description                                                                                  |
 |-----------------------|----------------------------------------------------------------------------------------------|
-| `--only-image`        | If set, creates only the Docker image without starting the container.                       |
-| `-env`                | Sets environment variables to be passed to the container during creation.                   |
+| `--only-image`        | If set, creates only the Docker image without starting the container.      
+| `--only-dockerfile`        | Generates only the Dockerfile without building the image or starting the container.                      |
+| `-e`, `--env`                | Sets environment variables to be passed to the container during creation.                   |
 | `--env-file`          | Specifies a file containing environment variables to be loaded into the container.           |
 | `-p`, `--port`        | Specifies the port on which the container will expose its services.                         |
 | `-v`, `--version`     | Defines the version of the language or runtime environment to be used.                      |
@@ -59,12 +60,20 @@ autotasker docker [OPTIONS] PATH
   ```bash
     autotasker docker --only-image /path/to/your/directory
   ```
+  - Create a dockerfile:
+  ```bash
+    autotasker docker --only-dockerfile /path/to/your/directory
+  ```
+  - Create a docker container with environment variables:
+  ```bash
+    autotasker docker --env NAME=Mario --env AGE=21 /path/to/your/directory
+  ```
   - Create a docker container with custom port:
   ```bash
   autotasker docker -p 8000 /path/to/your/directory
   ```
   - Create  a docker container with a specific version:
-  ```ash
+  ```bash
   autotasker docker -v 3.12 /path/to/your/directory
   ```
 

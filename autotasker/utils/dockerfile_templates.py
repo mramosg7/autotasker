@@ -1,20 +1,42 @@
 from string import Template
+import os
 
 
-def get_dockerfile_template(language: str, port: int, version: str) -> str:
+def read_env_file(file_path):
+    env_vars = []
+
+    with open(file_path, 'r', encoding='utf-16') as file:
+        for line in file:
+            line = line.strip()
+            if line and not line.startswith('#') and '=' in line:
+                env_vars.append(line.strip())
+    return env_vars
+
+
+def get_dockerfile_template(language: str, port: int, version: str, envs: tuple, env_file: str) -> str:
     """
     Returns the Dockerfile template for the specified language and version.
 
     Args:
-        language (str): The programming language for the Dockerfile.
         version (str): The version of the programming language.
         port (float): The port on which the container will run.
+        envs (tuple): A tuple of environment variables to be included in the Dockerfile. Each element is a string
+                      representing a key-value pair (e.g., ("ENV_VAR1=value1"), ("ENV_VAR2=value2")). These environment
+                      variables are directly added to the Dockerfile with the 'ENV' instruction.
+        env_file (str): Path to a file containing additional environment variables. Each line of the file should
+                        contain a key-value pair formatted as `KEY=value`. These variables are read and also included
+                        in the Dockerfile as `ENV` instructions.
 
     Returns:
         str: The Dockerfile template.
     """
 
     version = version + '-alpine'
+    if env_file is not None:
+        env_file = "\n".join([f"ENV {var}" for var in read_env_file(env_file)])
+    else:
+        env_file = ""
+    envs = "".join([f'ENV {env}\n' for env in envs])
 
     if language == 'django' and version == 'lts-alpine':
         version = 'alpine'
@@ -27,12 +49,13 @@ def get_dockerfile_template(language: str, port: int, version: str) -> str:
     WORKDIR /app
     
     COPY . /app
-    
+    {envs}
+    {env_file}
     RUN pip3 install -r requirements.txt
     
     ENTRYPOINT ["python3"]
     CMD ["manage.py", "runserver", "0.0.0.0:{port}"]''',
-            'vite': f'''FROM node:{version} AS build
+        'vite': f'''FROM node:{version} AS build
     
     WORKDIR /app
     
@@ -44,6 +67,8 @@ def get_dockerfile_template(language: str, port: int, version: str) -> str:
     RUN npm run build
     
     FROM nginx:alpine
+    {envs}
+    {env_file}
     COPY --from=build /app/dist /usr/share/nginx/html
     EXPOSE {port}
     CMD ["nginx", "-g", "daemon off;"]
@@ -60,6 +85,8 @@ def get_dockerfile_template(language: str, port: int, version: str) -> str:
     RUN npm run build
 
     FROM nginx:alpine
+    {envs}
+    {env_file}
     COPY --from=build /app/build /usr/share/nginx/html
     EXPOSE {port}
     CMD ["nginx", "-g", "daemon off;"]

@@ -11,17 +11,23 @@ def cli():
 
 
 @cli.command()
-@click.argument('path')
+@click.argument('path', type=click.Path(exists=True))
 @click.option('--only-image', is_flag=True, default=False,
               help='Creates only the image, without starting the container.')
-@click.option('-env', help='Sets environment variables to be passed to the container during creation.')
-@click.option('--env-file', help='Specifies a file containing environment variables to be loaded into the container.')
+@click.option('--only-dockerfile', is_flag=True, default=False,
+              help='Generates only the Dockerfile without building the image or starting the container.')
+@click.option('-e', '--env', 'env', default=None, multiple=True,
+              help='Sets environment variables to be passed to the container during creation.')
+@click.option('--env-file', type=click.Path(exists=True),
+              help='''Path to a file containing additional environment variables. Each line of the file should
+contain a key-value pair formatted as `KEY=value`. These variables are read and also included
+in the Dockerfile as `ENV` instructions. Only files with UTF-16 encoding are supported.''')
 @click.option('-p', "--port", default=80, help='Specifies the port on which the container will expose its services. '
                                                'Defaults to port 80 if not specified.')
 @click.option('-v', "--version", default='lts', help='Defines the version of the language or runtime environment to be '
                                                      'used. If not provided, the latest available version will be used'
                                                      ' by default.')
-def docker(path: str, only_image: bool, env: str, env_file: str, port: int, version: str):
+def docker(path: str, only_image: bool, only_dockerfile: bool, env: tuple, env_file: str, port: int, version: str):
     """Creates a Docker container based on user input."""
 
     click.echo(click.style(" Select the programming language:", bold=True, fg='cyan'))
@@ -43,23 +49,27 @@ def docker(path: str, only_image: bool, env: str, env_file: str, port: int, vers
     selected_language = prompt(questions)
 
     selected_lang = selected_language[0]
-    image_name = inquirer.text(message="Enter the name of the Docker image:").execute()
+    if not only_dockerfile:
+        image_name = inquirer.text(message="Enter the name of the Docker image:").execute()
 
-    container_name = None
-    if not only_image:
-        container_name = inquirer.text(message="Enter the name of the Docker container:").execute()
+        container_name = None
+        if not only_image:
+            container_name = inquirer.text(message="Enter the name of the Docker container:").execute()
 
-    dockermanager = DockerManager(path, selected_lang, image_name, port, container_name, version)
+        dockermanager = DockerManager(dockerfile_path=path, language=selected_lang, image=image_name, port=port,
+                                      container=container_name, version=version, envs=env, env_file=env_file)
 
-    # Create the Dockerfile
-    dockermanager.create_dockerfile()
+        dockermanager.create_dockerfile()
 
-    # Create the Image
-    dockermanager.create_image()
+        dockermanager.create_image()
 
-    # Creaate Container
-    if not only_image:
-        dockermanager.create_container()
+        if not only_image:
+            dockermanager.create_container()
+    else:
+        dockermanager = DockerManager(dockerfile_path=path, language=selected_lang, envs=env, port=port,
+                                      version=version, env_file=env_file, image=None)
+
+        dockermanager.create_dockerfile()
 
 
 # Hay que añadir contexto en la database

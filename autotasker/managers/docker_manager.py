@@ -17,7 +17,7 @@ class DockerManager:
             version (str): The version of the programming language.
     """
 
-    def __init__(self, dockerfile_path: str, language: str, image: str, port: int = 8000, container: str = None, version: str = None):
+    def __init__(self, dockerfile_path: str, language: str, image: str, envs: tuple,env_file:str, port: int = 8000, container: str = None, version: str = None):
         """
         Initializes the DockerManager with an image name, an optional container name, and a port.
 
@@ -28,6 +28,12 @@ class DockerManager:
             port (int, optional): The port on which the container will run. Defaults to 8000.
             language (str): The programming language for the Docker container
             version (str): The version of the programming language.
+            envs (tuple): A tuple of environment variables to be included in the Dockerfile. Each element is a string
+                      representing a key-value pair (e.g., ("ENV_VAR1=value1"), ("ENV_VAR2=value2")). These environment
+                      variables are directly added to the Dockerfile with the 'ENV' instruction.
+            env_file (str): Path to a file containing additional environment variables. Each line of the file should
+                        contain a key-value pair formatted as `KEY=value`. These variables are read and also included
+                        in the Dockerfile as `ENV` instructions.
         """
 
         self.version = version
@@ -36,16 +42,15 @@ class DockerManager:
         self.port = port
         self.container = container
         self.language = language
+        self.envs = envs
+        self.env_file = env_file
 
     def create_dockerfile(self):
         """This function is used to create the Dockerfile based on the provided data."""
 
         click.echo("   • Dockerfile: creating...", nl=False)
-        if not os.path.exists(self.dockerfile_path):
-            click.echo(click.style(f'Error: The file "{self.dockerfile_path}" does not exist.', fg='red'))
-            raise click.Abort()
 
-        template = get_dockerfile_template(self.language, self.port, self.version)
+        template = get_dockerfile_template(self.language, self.port, self.version, self.envs, self.env_file)
 
         full_dockerfile_path = os.path.join(self.dockerfile_path, "dockerfile")
         with open(full_dockerfile_path, "w") as f:
