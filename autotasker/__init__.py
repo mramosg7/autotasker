@@ -5,7 +5,7 @@ from InquirerPy import prompt, inquirer
 from autotasker.commands import docker
 
 @click.group()
-@click.version_option(version="0.2.0", message="autotasker 0.2.0")
+@click.version_option(version="0.2.1", message="autotasker 0.2.1")
 def cli():
     """Application for Automating Processes."""
     pass

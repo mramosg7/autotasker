@@ -6,7 +6,7 @@ with open('README.md', 'rb') as f:
 
 setup(
     name='autotasker',
-    version='0.2.0',
+    version='0.2.1',
     description='AutoTasker is a console application designed to simplify and automate repetitive tasks without the '
                 'need for programming skills. With AutoTasker, you can easily set up a variety of automated tasks, '
                 'saving you time and effort in your daily activities.',
