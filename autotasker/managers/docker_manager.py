@@ -2,6 +2,9 @@ import click
 import subprocess
 from autotasker.utils.dockerfile_templates import get_dockerfile_template
 import os
+from autotasker.utils.spinner import spinner
+
+
 
 
 class DockerManager:
@@ -47,48 +50,53 @@ class DockerManager:
 
     def create_dockerfile(self):
         """This function is used to create the Dockerfile based on the provided data."""
-
-        click.echo("   • Dockerfile: creating...", nl=False)
-
+        stop = spinner("   • Generating Dockerfile ...")
         template = get_dockerfile_template(self.language, self.port, self.version, self.envs, self.env_file)
 
         full_dockerfile_path = os.path.join(self.dockerfile_path, "dockerfile")
         with open(full_dockerfile_path, "w") as f:
-            f.write(template)
-
-        click.echo("\r   • Dockerfile: " + click.style("created    ", fg="green"))
+           f.write(template)
+        stop()
+        click.echo("\r   • Generating Dockerfile " + click.style("done    ", fg="green"))
 
     def create_image(self):
         """This function will create the Docker image using the provided data."""
-
-        click.echo("   • Docker Image: creating...", nl=False)
+        stop = spinner("   • Building Docker image ...")
         try:
             command = ["docker", "build", "-t", self.image, self.dockerfile_path]
 
-            result = subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace')
-
-            if result.returncode == 0:
-                click.echo("\r   • Docker Image: " + click.style("created    ", fg="green"))
-            else:
-                click.echo(click.style(f'\nError: {result.stderr}', fg='red'))
-                click.echo(click.style(f'\nStdout: {result.stdout}', fg='yellow'))
-                raise click.Abort()
-        except Exception as e:
+            result = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True,
+            )
+            stop()
+            click.echo("\r   • Building Docker image ... " + click.style("done    ", fg="green"))
+        except subprocess.CalledProcessError as e:
+            stop()
+            click.echo(click.style(f'\nError: {e.stderr.strip()}', fg='red'))
             raise click.Abort()
+        except Exception as e:
+            stop()
+            raise click.Abort()
+
 
     def create_container(self):
         """This function will create the container from the previous image."""
-
-        click.echo("   • Docker Container: creating...", nl=False)
+        stop = spinner("   • Starting Docker container ...")
         try:
             command = ["docker", "run", "-d", "-p", f"{self.port}:{self.port}", "--name", self.container,
                        self.image]
 
             result = subprocess.run(command, capture_output=True, text=True)
+            stop()
 
             if result.returncode == 0:
-                click.echo("\r   • Docker Container: " + click.style("created    ", fg="green"))
+                click.echo("\r   • Starting Docker container ... " + click.style("done    ", fg="green"))
             else:
+
                 click.echo(click.style(f'\nError: {result.stderr}', fg='red'))
                 raise click.Abort()
         except Exception as e:
@@ -99,3 +107,5 @@ class DockerManager:
             result = subprocess.run(remove_image, capture_output=True, text=True)
             click.echo("\rDeleted                " + click.style("created", fg="red"))
             raise click.Abort()
+
+
