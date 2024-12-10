@@ -1,6 +1,7 @@
 import click
 from autotasker.managers.docker_manager import DockerManager
 from InquirerPy import prompt, inquirer
+from autotasker.utils.docker_check import is_docker_running, check_names
 
 
 @click.command()
@@ -23,6 +24,9 @@ in the Dockerfile as `ENV` instructions.''')
 def docker(path: str, only_image: bool, only_dockerfile: bool, env: tuple, env_file: str, port: int, version: str):
     """Creates a Docker container based on user input."""
 
+    if not (is_docker_running()):
+        exit(1)
+
     click.echo(click.style(" Select the programming language:", bold=True, fg='cyan'))
     languages = [
         {"name": "Django", "value": "django"},
@@ -44,11 +48,27 @@ def docker(path: str, only_image: bool, only_dockerfile: bool, env: tuple, env_f
 
     selected_lang = selected_language[0]
     if not only_dockerfile:
-        image_name = inquirer.text(message="Enter the name of the Docker image:").execute()
+        while True:
+            image_name = inquirer.text(message="Enter the name of the Docker image:").execute()
+            if check_names(image_name):
+                break
+            click.echo(click.style(
+                "Invalid Docker image name. It must contain only letters, numbers, dots (.), hyphens (-), "
+                "or underscores (_), and no spaces.",
+                fg='red'
+            ))
 
         container_name = None
         if not only_image:
-            container_name = inquirer.text(message="Enter the name of the Docker container:").execute()
+            while True:
+                container_name = inquirer.text(message="Enter the name of the Docker container:").execute()
+                if check_names(container_name):
+                    break
+                click.echo(click.style(
+                    "Invalid Docker image name. It must contain only letters, numbers, dots (.), hyphens (-), "
+                    "or underscores (_), and no spaces.",
+                    fg='red'
+                ))
 
         dockermanager = DockerManager(dockerfile_path=path, language=selected_lang, image=image_name, port=port,
                                       container=container_name, version=version, envs=env, env_file=env_file)

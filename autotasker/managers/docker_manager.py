@@ -3,7 +3,7 @@ import subprocess
 from autotasker.utils.dockerfile_templates import get_dockerfile_template
 import os
 from autotasker.utils.spinner import spinner
-import time
+
 
 
 
@@ -65,17 +65,23 @@ class DockerManager:
         try:
             command = ["docker", "build", "-t", self.image, self.dockerfile_path]
 
-            result = subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='replace')
+            result = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                check=True,
+            )
             stop()
-
-            if result.returncode == 0:
-                click.echo("\r   • Building Docker image ... " + click.style("done    ", fg="green"))
-            else:
-                click.echo(click.style(f'\nError: {result.stderr}', fg='red'))
-                click.echo(click.style(f'\nStdout: {result.stdout}', fg='yellow'))
-                raise click.Abort()
-        except Exception as e:
+            click.echo("\r   • Building Docker image ... " + click.style("done    ", fg="green"))
+        except subprocess.CalledProcessError as e:
+            stop()
+            click.echo(click.style(f'\nError: {e.stderr.strip()}', fg='red'))
             raise click.Abort()
+        except Exception as e:
+            stop()
+            raise click.Abort()
+
 
     def create_container(self):
         """This function will create the container from the previous image."""
@@ -101,3 +107,5 @@ class DockerManager:
             result = subprocess.run(remove_image, capture_output=True, text=True)
             click.echo("\rDeleted                " + click.style("created", fg="red"))
             raise click.Abort()
+
+
