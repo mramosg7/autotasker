@@ -3,7 +3,7 @@
 >  This project is still a work in progress, so you may encounter errors while using it.
 
 [![GPL License](https://img.shields.io/badge/license-GPL-blue.svg)](http://www.gnu.org/licenses/gpl-3.0) 
-![Version](https://img.shields.io/badge/version-0.1.1-green.svg)
+![Version](https://img.shields.io/badge/version-0.2.0-green.svg)
 [![Download Stats](https://img.shields.io/pypi/dm/autotasker)](https://pypistats.org/packages/autotasker)
 [![Github repository](https://img.shields.io/badge/GitHub-autotasker-purple)](https://github.com/mramosg7/autotasker)
 
